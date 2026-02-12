@@ -1,0 +1,52 @@
+{
+  "name": "onemap-v2",
+  "version": "2.0.0",
+  "description": "MCP server for OneMap Singapore APIs - provides geocoding, routing, themes, planning areas, population data, transport, and static maps",
+  "protocol_version": "2024-11-05",
+  "capabilities": {
+    "tools": {
+      "supported": true
+    },
+    "resources": {
+      "supported": false
+    },
+    "prompts": {
+      "supported": false
+    }
+  },
+  "transport": {
+    "type": "stdio"
+  },
+  "server": {
+    "command": "python",
+    "args": ["server.py"],
+    "env": {
+      "ONEMAP_EMAIL": "${ONEMAP_EMAIL}",
+      "ONEMAP_EMAIL_PASSWORD": "${ONEMAP_EMAIL_PASSWORD}"
+    }
+  },
+  "tools": [
+    {"name": "search", "description": "Search for address information for roads, buildings, postal codes"},
+    {"name": "reverse_geocode_wgs84", "description": "Get address from WGS84 coordinates (lat/lon)"},
+    {"name": "reverse_geocode_svy21", "description": "Get address from SVY21 coordinates (X/Y)"},
+    {"name": "route_walk_drive_cycle", "description": "Get walking, driving, cycling, or barrier-free routes"},
+    {"name": "route_public_transport", "description": "Get public transport routes with bus/MRT details"},
+    {"name": "convert_4326_to_3857", "description": "Convert WGS84 to Web Mercator coordinates"},
+    {"name": "convert_4326_to_3414", "description": "Convert WGS84 to SVY21 coordinates"},
+    {"name": "convert_3414_to_4326", "description": "Convert SVY21 to WGS84 coordinates"},
+    {"name": "get_all_themes_info", "description": "Get list of all thematic layers"},
+    {"name": "retrieve_theme", "description": "Retrieve data for a specific theme"},
+    {"name": "get_all_planning_areas", "description": "Get all planning area polygons"},
+    {"name": "get_planning_area_by_location", "description": "Get planning area for a location"},
+    {"name": "get_population_age_group", "description": "Get population by age group"},
+    {"name": "get_nearby_mrt_stations", "description": "Find nearby MRT/LRT stations"},
+    {"name": "get_nearby_bus_stops", "description": "Find nearby bus stops"},
+    {"name": "get_static_map", "description": "Generate static map images with overlays"}
+  ],
+  "author": "OneMap MCP",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": ""
+  }
+}
