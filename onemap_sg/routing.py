@@ -124,7 +124,7 @@ async def route_public_transport(
     departure_time: str,
     mode: str,
     max_walk_distance: int | None = None,
-    num_itineraries: int | None = None,
+    num_itineraries: int | None = 1,
 ) -> dict[str, Any]:
     """Get public transport route between two points.
 
@@ -142,7 +142,7 @@ async def route_public_transport(
         mode: "TRANSIT" (all), "BUS" (bus only), or "RAIL" (MRT/LRT only).
             Must be UPPERCASE.
         max_walk_distance: Maximum walking distance in meters (optional).
-        num_itineraries: Number of route options to return (1-3, optional).
+        num_itineraries: Number of routes (1-3, default 1).
 
     Returns:
         JSON dict with itineraries with legs, transfers, fare, and transit details.

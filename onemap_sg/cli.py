@@ -213,7 +213,7 @@ async def route_cycle(start: str, end: str):
 @click.option("--time", "departure_time", default=None, help="RFC3339 or Unix timestamp: '09:00', '2026-06-08T09:00:00+08:00', or '1759381200' (default: now)")
 @click.option("--mode", "transit_mode", default="TRANSIT", type=click.Choice(["TRANSIT", "BUS", "RAIL"]))
 @click.option("--max-walk", type=int, default=None, help="Max walking distance (m)")
-@click.option("--num", type=int, default=None, help="Number of itineraries (1-3)")
+@click.option("--num", type=int, default=None, help="Number of itineraries (1-3, default: 1)")
 async def route_transit(start: str, end: str, departure_time: str | None, transit_mode: str, max_walk: int | None, num: int | None):
     """Public transport route.  START/END: "lat,lon" or address/postal."""
     from onemap_sg import route_public_transport
