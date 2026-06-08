@@ -6,11 +6,11 @@ category: devops
 
 # onemap-sg-cli
 
-CLI for Singapore OneMap APIs. Install: `pip install onemap-sg-cli`.
+CLI for Singapore OneMap APIs. Run directly via `uvx` (no install needed) or `pip install onemap-sg-cli`.
 
 ## Auth Setup
 
-The CLI reads credentials from a `.env` file (auto-loaded by python-dotenv).
+Credentials are read from a `.env` file (auto-loaded by python-dotenv).
 
 Create `~/.onemap.env`:
 
@@ -18,113 +18,87 @@ Create `~/.onemap.env`:
 cat > ~/.onemap.env << 'EOF'
 ONEMAP_EMAIL=your@email.com
 ONEMAP_EMAIL_PASSWORD=your_password
-# Optional: URA property data
+# Optional
 URA_ACCESS_KEY=your_ura_key
 EOF
 ```
 
-Then source it or export:
+Export before running:
 
 ```bash
 export $(cat ~/.onemap.env | xargs)
-# or add to ~/.bashrc / ~/.zshrc
 ```
 
-Alternatively, create a `.env` in the current working directory — the CLI auto-loads it.
+Or add to `~/.bashrc` / `~/.zshrc` for persistence.
 
-**If credentials are missing**, the CLI will error. Tell the user to:
+**If credentials are missing**, the CLI exits with an error. Guide the user to:
 1. Register at https://www.onemap.gov.sg/apidocs/register
-2. Create `~/.onemap.env` with the credentials above
-3. Export them or restart the shell
+2. Create `~/.onemap.env`
+3. Export env vars
+
+**Usage pattern**: prefix every command with `export $(cat ~/.onemap.env | xargs) &&` if not exported, or load once at session start.
 
 ## Commands
 
+All commands can be run as `onemap ...` (if pip-installed) or `uvx --from onemap-sg-cli onemap ...` (no install).
+
 ### Search
 ```bash
-onemap search "Orchard Road"
-onemap search "307987"
+uvx --from onemap-sg-cli onemap search "Orchard Road"
+uvx --from onemap-sg-cli onemap search "307987"
 ```
 
-### Geocode (coords → address)
+### Geocode
 ```bash
-onemap geocode wgs84 1.342 103.732
-onemap geocode svy21 16790 36056
+uvx --from onemap-sg-cli onemap geocode wgs84 1.342 103.732
 ```
 
 ### Routing
 ```bash
 # Walk / Drive / Cycle
-onemap route walk "Chinese Garden MRT" "Jurong East MRT"
+uvx --from onemap-sg-cli onemap route walk "Chinese Garden MRT" "Jurong East MRT"
 
-# Public transport — accepts address, postal, or lat,lon
-onemap route transit "Chinese Garden MRT" "One Raffles Quay"
-onemap route transit "1.342,103.732" "1.281,103.852"
-onemap route transit "Chinese Garden MRT" "One Raffles Quay" --time "09:00"
-onemap route transit "Chinese Garden MRT" "One Raffles Quay" --time "2026-06-08T09:00:00+08:00"
+# Public transport — address, postal, or lat,lon
+uvx --from onemap-sg-cli onemap route transit "Chinese Garden MRT" "One Raffles Quay"
+uvx --from onemap-sg-cli onemap route transit "1.342,103.732" "1.281,103.852"
+uvx --from onemap-sg-cli onemap route transit "Chinese Garden MRT" "One Raffles Quay" --time "09:00"
+uvx --from onemap-sg-cli onemap route transit "Chinese Garden MRT" "One Raffles Quay" --time "2026-06-08T09:00:00+08:00"
 ```
 
 ### Coordinate Conversion
 ```bash
-onemap convert wgs84-to-svy21 1.342 103.732
-onemap convert svy21-to-wgs84 16790 36056
+uvx --from onemap-sg-cli onemap convert wgs84-to-svy21 1.342 103.732
 ```
 
-### Themes
+### Demographics
 ```bash
-onemap theme list
-onemap theme get kindergartens --extents "1.29,103.78,1.33,103.87"
-```
-
-### Planning Areas
-```bash
-onemap planning names
-onemap planning locate 1.342 103.732
-```
-
-### Population
-```bash
-onemap pop age "Bedok" 2020
-onemap pop ethnic "Tampines" 2020 --gender female
+uvx --from onemap-sg-cli onemap pop age "Bedok" 2020
 ```
 
 ### Nearby Transport
 ```bash
-onemap nearby mrt 1.342 103.732 --radius 2000
-onemap nearby bus 1.342 103.732
-```
-
-### Amenities
-```bash
-onemap amenity nearby 1.342 103.732 hawker_centres --radius 1000
+uvx --from onemap-sg-cli onemap nearby mrt 1.342 103.732 --radius 2000
 ```
 
 ### Static Map
 ```bash
-onemap map default --lat 1.342 --lon 103.732 --zoom 15 -o map.png
+uvx --from onemap-sg-cli onemap map default --lat 1.342 --lon 103.732 --zoom 15 -o map.png
 ```
 
-### Elevation
+### Full list
 ```bash
-onemap elevation point 1.352 103.820
-onemap elevation profile "1.35,103.82|1.36,103.83"
-```
-
-### URA Property Data
-```bash
-onemap ura transactions --batch 1
-onemap ura median-rentals
-onemap ura carpark-avail
+uvx --from onemap-sg-cli onemap --help
 ```
 
 ## Pitfalls
 
-1. **Auth persistence**: create `~/.onemap.env` with credentials. The CLI auto-loads `.env` from CWD or you can export env vars directly.
-2. **Route accepts addresses**: `onemap route transit "Chinese Garden MRT" "One Raffles Quay"` — auto-geocodes. Also accepts `"lat,lon"` or postal codes.
-3. **Route transit `--time`**: RFC 3339 or Unix timestamp. `"09:00"` (today), `"2026-06-08T09:00:00+08:00"` (full), `"1780966800"` (timestamp). No separate `--date`.
-4. **URA requires separate key**: `URA_ACCESS_KEY` from https://www.ura.gov.sg/maps/api/.
-5. **Elevation uses external API**: Open-Elevation, 30m SRTM resolution.
-6. **Planning area / population years**: 2000, 2010, 2015, 2020 only.
-7. **Static map**: returns base64 PNG in JSON; use `-o file.png` to save.
+1. **Auth**: create `~/.onemap.env`, export env vars before running. CLI auto-loads `.env` from CWD.
+2. **Route addresses**: auto-geocoded. `"Chinese Garden MRT"`, `"609959"`, `"1.342,103.732"` all work.
+3. **`--time` format**: RFC 3339 (`"09:00"`, `"2026-06-08T09:00:00+08:00"`) or Unix timestamp (`"1780966800"`). No separate `--date`.
+4. **URA**: needs `URA_ACCESS_KEY` from https://www.ura.gov.sg/maps/api/.
+5. **Elevation**: Open-Elevation, 30m SRTM — not survey-grade.
+6. **Population years**: 2000, 2010, 2015, 2020 only.
+7. **Static map**: base64 PNG in JSON. Use `-o file.png` to save.
 
 ## Python Library
 
