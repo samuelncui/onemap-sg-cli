@@ -366,8 +366,8 @@ _POP_COMMANDS = {
 
 
 def _make_pop_cmd(fn_name: str):
-    @click.argument("planning_area")
     @click.argument("year", type=int)
+    @click.argument("planning_area")
     @click.option("--gender", type=click.Choice(["male", "female"]), default=None)
     async def cmd(planning_area: str, year: int, gender: str | None):
         from onemap_sg import population
