@@ -9,7 +9,7 @@ description = "CLI and Python library for Singapore OneMap APIs — search, geoc
 readme = "README.md"
 license = {text = "MIT"}
 authors = [
-    {name = "Sam Cui", email = "samuelncui@gmail.com"},
+    {name = "Samuel Cui", email = "i@cui.to"},
 ]
 keywords = ["singapore", "onemap", "geocoding", "routing", "maps", "cli"]
 classifiers = [
