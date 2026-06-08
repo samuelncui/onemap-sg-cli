@@ -11,7 +11,6 @@ from __future__ import annotations
 
 import asyncio
 import inspect
-import json
 import sys
 from datetime import datetime
 from typing import Any
@@ -43,6 +42,20 @@ class AsyncGroup(click.Group):
 
     command_class = AsyncCommand
     group_class = type
+
+
+# ---------------------------------------------------------------------------
+# Output formatting
+# ---------------------------------------------------------------------------
+
+from onemap_sg._format import format_output  # noqa: E402
+
+
+def _output(raw: Any, category: str) -> None:
+    """Format and print CLI output based on --format option."""
+    ctx = click.get_current_context()
+    fmt = ctx.obj.get("fmt", "text") if ctx.obj else "text"
+    click.echo(format_output(raw, category, fmt))
 
 
 # ---------------------------------------------------------------------------
@@ -81,10 +94,14 @@ async def _resolve_location(value: str) -> tuple[float, float]:
 # ---------------------------------------------------------------------------
 
 
-@click.group(cls=AsyncGroup)
+@click.group(cls=AsyncGroup, invoke_without_command=True)
+@click.option("-f", "--format", "fmt", type=click.Choice(["text", "json", "raw-json"]), default="text", help="Output format: text (default), json, raw-json")
 @click.version_option()
-def main():
+@click.pass_context
+def main(ctx, fmt):
     """OneMap SG CLI — Singapore mapping, geocoding, routing, and demographics."""
+    ctx.ensure_object(dict)
+    ctx.obj["fmt"] = fmt
 
 
 # ===========================================================================
@@ -100,7 +117,7 @@ async def search(query: str, page: int | None):
     from onemap_sg import search as _search
 
     result = await _search(query, page_number=page)
-    click.echo(json.dumps(result, indent=2, ensure_ascii=False))
+    _output(result, "search")
 
 
 # ===========================================================================
@@ -124,7 +141,7 @@ async def geocode_wgs84(latitude: float, longitude: float, buffer: int | None, h
 
     atype = "HDB" if hdb_only else ("All" if hdb_only is False else None)
     result = await reverse_geocode_wgs84(latitude, longitude, buffer=buffer, address_type=atype)
-    click.echo(json.dumps(result, indent=2, ensure_ascii=False))
+    _output(result, "geocode")
 
 
 @geocode.command("svy21", cls=AsyncCommand)
@@ -138,7 +155,7 @@ async def geocode_svy21(x: float, y: float, buffer: int | None, hdb_only: bool |
 
     atype = "HDB" if hdb_only else ("All" if hdb_only is False else None)
     result = await reverse_geocode_svy21(x, y, buffer=buffer, address_type=atype)
-    click.echo(json.dumps(result, indent=2, ensure_ascii=False))
+    _output(result, "geocode")
 
 
 # ===========================================================================
@@ -161,7 +178,7 @@ async def route_walk(start: str, end: str):
     s_lat, s_lon = await _resolve_location(start)
     e_lat, e_lon = await _resolve_location(end)
     result = await route_walk_drive_cycle(s_lat, s_lon, e_lat, e_lon, "walk")
-    click.echo(json.dumps(result, indent=2, ensure_ascii=False))
+    _output(result, "walk")
 
 
 @route.command("drive", cls=AsyncCommand)
@@ -174,7 +191,7 @@ async def route_drive(start: str, end: str):
     s_lat, s_lon = await _resolve_location(start)
     e_lat, e_lon = await _resolve_location(end)
     result = await route_walk_drive_cycle(s_lat, s_lon, e_lat, e_lon, "drive")
-    click.echo(json.dumps(result, indent=2, ensure_ascii=False))
+    _output(result, "drive")
 
 
 @route.command("cycle", cls=AsyncCommand)
@@ -187,7 +204,7 @@ async def route_cycle(start: str, end: str):
     s_lat, s_lon = await _resolve_location(start)
     e_lat, e_lon = await _resolve_location(end)
     result = await route_walk_drive_cycle(s_lat, s_lon, e_lat, e_lon, "cycle")
-    click.echo(json.dumps(result, indent=2, ensure_ascii=False))
+    _output(result, "cycle")
 
 
 @route.command("transit", cls=AsyncCommand)
@@ -211,7 +228,7 @@ async def route_transit(start: str, end: str, departure_time: str | None, transi
         departure_time=departure_time, mode=transit_mode,
         max_walk_distance=max_walk, num_itineraries=num,
     )
-    click.echo(json.dumps(result, indent=2, ensure_ascii=False))
+    _output(result, "transit")
 
 
 # ===========================================================================
@@ -242,7 +259,7 @@ def _make_convert_cmd(cmd_name: str, fn_name: str, a1: str, a2: str):
 
         fn = getattr(coordinate, fn_name)
         result = await fn(a, b)
-        click.echo(json.dumps(result, indent=2, ensure_ascii=False))
+        _output(result, "convert")
 
     cmd.__name__ = cmd_name.replace("-", "_")
     return cmd
@@ -271,7 +288,7 @@ async def theme_list(detail: bool):
     from onemap_sg import get_all_themes_info
 
     result = await get_all_themes_info(more_info="Y" if detail else "N")
-    click.echo(json.dumps(result, indent=2, ensure_ascii=False))
+    _output(result, "themes-list")
 
 
 @theme.command("info", cls=AsyncCommand)
@@ -281,7 +298,7 @@ async def theme_info(query_name: str):
     from onemap_sg import get_theme_info
 
     result = await get_theme_info(query_name)
-    click.echo(json.dumps(result, indent=2, ensure_ascii=False))
+    _output(result, "theme-info")
 
 
 @theme.command("get", cls=AsyncCommand)
@@ -292,7 +309,7 @@ async def theme_get(query_name: str, extents: str | None):
     from onemap_sg import retrieve_theme
 
     result = await retrieve_theme(query_name, extents=extents)
-    click.echo(json.dumps(result, indent=2, ensure_ascii=False))
+    _output(result, "theme-get")
 
 
 # ===========================================================================
@@ -312,7 +329,7 @@ async def planning_all(year: int | None):
     from onemap_sg import get_all_planning_areas
 
     result = await get_all_planning_areas(year=year)
-    click.echo(json.dumps(result, indent=2, ensure_ascii=False))
+    _output(result, "planning")
 
 
 @planning.command("names", cls=AsyncCommand)
@@ -322,7 +339,7 @@ async def planning_names(year: int | None):
     from onemap_sg import get_planning_area_names
 
     result = await get_planning_area_names(year=year)
-    click.echo(json.dumps(result, indent=2, ensure_ascii=False))
+    _output(result, "planning")
 
 
 @planning.command("locate", cls=AsyncCommand)
@@ -334,7 +351,7 @@ async def planning_locate(latitude: float, longitude: float, year: int | None):
     from onemap_sg import get_planning_area_by_location
 
     result = await get_planning_area_by_location(latitude, longitude, year=year)
-    click.echo(json.dumps(result, indent=2, ensure_ascii=False))
+    _output(result, "planning")
 
 
 # ===========================================================================
@@ -384,7 +401,7 @@ def _make_pop_cmd(fn_name: str):
                 result = await fn(planning_area, year)
         except TypeError:
             result = await fn(planning_area, year)
-        click.echo(json.dumps(result, indent=2, ensure_ascii=False))
+        _output(result, "pop")
 
     return cmd
 
@@ -418,7 +435,7 @@ async def nearby_mrt(latitude: float, longitude: float, radius: int | None):
     from onemap_sg import get_nearby_mrt_stations
 
     result = await get_nearby_mrt_stations(latitude, longitude, radius_in_meters=radius)
-    click.echo(json.dumps(result, indent=2, ensure_ascii=False))
+    _output(result, "nearby")
 
 
 @nearby.command("bus", cls=AsyncCommand)
@@ -430,7 +447,7 @@ async def nearby_bus(latitude: float, longitude: float, radius: int | None):
     from onemap_sg import get_nearby_bus_stops
 
     result = await get_nearby_bus_stops(latitude, longitude, radius_in_meters=radius)
-    click.echo(json.dumps(result, indent=2, ensure_ascii=False))
+    _output(result, "nearby")
 
 
 # ===========================================================================
@@ -457,7 +474,7 @@ async def amenity_nearby(latitude: float, longitude: float, type_: str, radius: 
     from onemap_sg import get_nearby_amenities
 
     result = await get_nearby_amenities(latitude, longitude, type_, radius_meters=radius)
-    click.echo(json.dumps(result, indent=2, ensure_ascii=False))
+    _output(result, "amenity")
 
 
 # ===========================================================================
@@ -501,7 +518,7 @@ async def map_cmd(layer: str, lat: float | None, lon: float | None, postal: str 
         click.echo(f"Saved {output}")
     else:
         summary = {k: v for k, v in result.items() if k != "image_base64"}
-        click.echo(json.dumps(summary, indent=2))
+        _output(summary, "map")
 
 
 # ===========================================================================
@@ -522,7 +539,7 @@ async def elevation_point(latitude: float, longitude: float):
     from onemap_sg import get_elevation
 
     result = await get_elevation(latitude, longitude)
-    click.echo(json.dumps(result, indent=2, ensure_ascii=False))
+    _output(result, "elevation")
 
 
 @elevation.command("profile", cls=AsyncCommand)
@@ -532,7 +549,7 @@ async def elevation_profile(coordinates: str):
     from onemap_sg import get_elevation_profile
 
     result = await get_elevation_profile(coordinates)
-    click.echo(json.dumps(result, indent=2, ensure_ascii=False))
+    _output(result, "elevation")
 
 
 # ===========================================================================
@@ -552,7 +569,7 @@ async def ura_transactions(batch: int):
     from onemap_sg.ura import get_private_residential_transactions
 
     result = await get_private_residential_transactions(batch)
-    click.echo(json.dumps(result, indent=2, ensure_ascii=False))
+    _output(result, "ura")
 
 
 @ura.command("rentals", cls=AsyncCommand)
@@ -562,7 +579,7 @@ async def ura_rentals(period: str):
     from onemap_sg.ura import get_private_rental_contracts
 
     result = await get_private_rental_contracts(period)
-    click.echo(json.dumps(result, indent=2, ensure_ascii=False))
+    _output(result, "ura")
 
 
 @ura.command("median-rentals", cls=AsyncCommand)
@@ -571,7 +588,7 @@ async def ura_median():
     from onemap_sg.ura import get_median_rentals
 
     result = await get_median_rentals()
-    click.echo(json.dumps(result, indent=2, ensure_ascii=False))
+    _output(result, "ura")
 
 
 @ura.command("developer-sales", cls=AsyncCommand)
@@ -581,7 +598,7 @@ async def ura_dev_sales(period: str):
     from onemap_sg.ura import get_developer_sales
 
     result = await get_developer_sales(period)
-    click.echo(json.dumps(result, indent=2, ensure_ascii=False))
+    _output(result, "ura")
 
 
 @ura.command("pipeline", cls=AsyncCommand)
@@ -590,7 +607,7 @@ async def ura_pipeline():
     from onemap_sg.ura import get_residential_pipeline
 
     result = await get_residential_pipeline()
-    click.echo(json.dumps(result, indent=2, ensure_ascii=False))
+    _output(result, "ura")
 
 
 @ura.command("decisions", cls=AsyncCommand)
@@ -600,7 +617,7 @@ async def ura_decisions(year: int):
     from onemap_sg.ura import get_planning_decisions
 
     result = await get_planning_decisions(year)
-    click.echo(json.dumps(result, indent=2, ensure_ascii=False))
+    _output(result, "ura")
 
 
 @ura.command("carpark-avail", cls=AsyncCommand)
@@ -609,7 +626,7 @@ async def ura_carpark_avail():
     from onemap_sg.ura import get_car_park_availability
 
     result = await get_car_park_availability()
-    click.echo(json.dumps(result, indent=2, ensure_ascii=False))
+    _output(result, "ura")
 
 
 @ura.command("carpark-details", cls=AsyncCommand)
@@ -618,7 +635,7 @@ async def ura_carpark_details():
     from onemap_sg.ura import get_car_park_details
 
     result = await get_car_park_details()
-    click.echo(json.dumps(result, indent=2, ensure_ascii=False))
+    _output(result, "ura")
 
 
 if __name__ == "__main__":
