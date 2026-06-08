@@ -8,7 +8,34 @@ category: devops
 
 CLI for Singapore OneMap APIs. Install: `pip install onemap-sg-cli`.
 
-**Auth**: set `ONEMAP_EMAIL` and `ONEMAP_EMAIL_PASSWORD` env vars (or `ONEMAP_TOKEN`). For URA data, also set `URA_ACCESS_KEY`.
+## Auth Setup
+
+The CLI reads credentials from a `.env` file (auto-loaded by python-dotenv).
+
+Create `~/.onemap.env`:
+
+```bash
+cat > ~/.onemap.env << 'EOF'
+ONEMAP_EMAIL=your@email.com
+ONEMAP_EMAIL_PASSWORD=your_password
+# Optional: URA property data
+URA_ACCESS_KEY=your_ura_key
+EOF
+```
+
+Then source it or export:
+
+```bash
+export $(cat ~/.onemap.env | xargs)
+# or add to ~/.bashrc / ~/.zshrc
+```
+
+Alternatively, create a `.env` in the current working directory — the CLI auto-loads it.
+
+**If credentials are missing**, the CLI will error. Tell the user to:
+1. Register at https://www.onemap.gov.sg/apidocs/register
+2. Create `~/.onemap.env` with the credentials above
+3. Export them or restart the shell
 
 ## Commands
 
@@ -31,6 +58,7 @@ onemap route walk "Chinese Garden MRT" "Jurong East MRT"
 
 # Public transport — accepts address, postal, or lat,lon
 onemap route transit "Chinese Garden MRT" "One Raffles Quay"
+onemap route transit "1.342,103.732" "1.281,103.852"
 onemap route transit "Chinese Garden MRT" "One Raffles Quay" --time "09:00"
 onemap route transit "Chinese Garden MRT" "One Raffles Quay" --time "2026-06-08T09:00:00+08:00"
 ```
@@ -90,12 +118,13 @@ onemap ura carpark-avail
 
 ## Pitfalls
 
-1. **Route accepts addresses**: `onemap route transit "Chinese Garden MRT" "One Raffles Quay"` — auto-geocodes via OneMap search. Also accepts `"lat,lon"` or postal codes.
-2. **Route transit `--time`**: RFC 3339 or Unix timestamp. `"09:00"` (today), `"2026-06-08T09:00:00+08:00"` (full), `"1780966800"` (timestamp). No separate `--date`.
-3. **URA requires separate key**: `URA_ACCESS_KEY` from https://www.ura.gov.sg/maps/api/.
-4. **Elevation uses external API**: Open-Elevation, 30m SRTM resolution.
-5. **Planning area / population years**: 2000, 2010, 2015, 2020 only.
-6. **Static map**: returns base64 PNG in JSON; use `-o file.png` to save.
+1. **Auth persistence**: create `~/.onemap.env` with credentials. The CLI auto-loads `.env` from CWD or you can export env vars directly.
+2. **Route accepts addresses**: `onemap route transit "Chinese Garden MRT" "One Raffles Quay"` — auto-geocodes. Also accepts `"lat,lon"` or postal codes.
+3. **Route transit `--time`**: RFC 3339 or Unix timestamp. `"09:00"` (today), `"2026-06-08T09:00:00+08:00"` (full), `"1780966800"` (timestamp). No separate `--date`.
+4. **URA requires separate key**: `URA_ACCESS_KEY` from https://www.ura.gov.sg/maps/api/.
+5. **Elevation uses external API**: Open-Elevation, 30m SRTM resolution.
+6. **Planning area / population years**: 2000, 2010, 2015, 2020 only.
+7. **Static map**: returns base64 PNG in JSON; use `-o file.png` to save.
 
 ## Python Library
 

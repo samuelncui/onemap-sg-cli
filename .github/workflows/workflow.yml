@@ -19,8 +19,9 @@ jobs:
 
       - name: Install + test
         run: |
-          uv pip install --system -e ".[dev]"
-          python -m pytest tests/ -v
+          uv venv
+          uv pip install -e ".[dev]"
+          uv run pytest tests/ -v
 
   publish:
     needs: test
