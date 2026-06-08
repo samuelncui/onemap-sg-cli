@@ -64,6 +64,15 @@ def _parse_datetime(value: str) -> tuple[str, str]:
         date_formatted = datetime.now().strftime("%m-%d-%Y")
 
     time_formatted = f"{int(hour):02d}:{minute}:{second or '00'}"
+
+    # Range validation
+    h, m, s = int(hour), int(minute), int(second or "0")
+    if not (0 <= h <= 23 and 0 <= m <= 59 and 0 <= s <= 59):
+        raise ValueError(
+            f"Time out of range: {h:02d}:{m:02d}:{s:02d}. "
+            f"Expected 00-23:00-59:00-59."
+        )
+
     return date_formatted, time_formatted
 
 
