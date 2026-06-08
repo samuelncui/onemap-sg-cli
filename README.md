@@ -63,7 +63,28 @@ onemap nearby mrt 1.342 103.732 --radius 2000
 onemap map default --lat 1.342 --lon 103.732 -o map.png
 ```
 
-See `onemap --help` for all commands.
+See `onemap --help` for full command list.
+
+## Output Formats
+
+Three output modes via `-f` / `--format`:
+
+```bash
+# Text (default) — human-readable
+$ onemap route transit "Chinese Garden MRT" "One Raffles Quay"
+Duration: 33.5 min  |  Transfers: 0
+  Walk 22.35m
+  EW (CHINESE GARDEN MRT STATION → RAFFLES PLACE MRT STATION)
+  Walk 425.65m
+
+# JSON (-f json) — simplified, structured
+$ onemap -f json route transit "Chinese Garden MRT" "One Raffles Quay"
+{"duration_min": 33.5, "transfers": 0, "legs": [...]}
+
+# Raw JSON (-f raw-json) — full API response
+$ onemap -f raw-json route transit "Chinese Garden MRT" "One Raffles Quay"
+{"requestParameters": {...}, "plan": {...}, ...}
+```
 
 ## Python Library
 
