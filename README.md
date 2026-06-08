@@ -74,25 +74,22 @@ route = asyncio.run(onemap_sg.route_public_transport(
 ))
 ```
 
-## Hermes Skill / Agent Instructions
+## Agent Instructions
 
 One-line install for any AI agent:
 
 ```bash
-# Hermes
+# Auto-detect & install to all found agents (recommended)
+curl -sSL https://raw.githubusercontent.com/samuelncui/onemap-sg-cli/main/install-agent.sh | bash
+
+# Install to all agents unconditionally
+curl -sSL https://raw.githubusercontent.com/samuelncui/onemap-sg-cli/main/install-agent.sh | bash -s all
+
+# Specific agent
 curl -sSL https://raw.githubusercontent.com/samuelncui/onemap-sg-cli/main/install-agent.sh | bash -s hermes
-
-# Cursor
-curl -sSL https://raw.githubusercontent.com/samuelncui/onemap-sg-cli/main/install-agent.sh | bash -s cursor
-
-# Claude Code
-curl -sSL https://raw.githubusercontent.com/samuelncui/onemap-sg-cli/main/install-agent.sh | bash -s claude
-
-# Universal (AGENTS.md)
-curl -sSL https://raw.githubusercontent.com/samuelncui/onemap-sg-cli/main/install-agent.sh | bash -s agents
 ```
 
-Supported: `hermes`, `cursor`, `claude`, `cline`, `copilot`, `windsurf`, `aider`, `agents`.
+Supported: `hermes`, `cursor`, `claude`, `cline`, `copilot`, `windsurf`, `aider`, `agents`. Default: auto-detect all.
 
 ## License
 
