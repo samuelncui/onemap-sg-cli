@@ -5,9 +5,14 @@ OneMap API configuration — constants, endpoints, environment.
 from __future__ import annotations
 
 import os
+from pathlib import Path
 
 from dotenv import load_dotenv
 
+# Load ~/.onemap.env first, then CWD .env (CWD overrides)
+_onemap_env = Path.home() / ".onemap.env"
+if _onemap_env.exists():
+    load_dotenv(_onemap_env)
 load_dotenv()
 
 # ---------------------------------------------------------------------------

@@ -30,7 +30,11 @@ class AsyncCommand(click.Command):
     def invoke(self, ctx: click.Context) -> Any:
         callback = ctx.command.callback  # type: ignore[union-attr]
         if inspect.iscoroutinefunction(callback):
-            return asyncio.run(callback(**ctx.params))
+            try:
+                return asyncio.run(callback(**ctx.params))
+            except Exception as exc:
+                click.echo(f"Error: {exc}", err=True)
+                sys.exit(1)
         return super().invoke(ctx)
 
 

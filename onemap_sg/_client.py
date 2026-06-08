@@ -97,9 +97,13 @@ def _get_credentials() -> tuple[str, str]:
     password = os.getenv("ONEMAP_EMAIL_PASSWORD")
     if not email or not password:
         raise ValueError(
-            "OneMap credentials required. Set ONEMAP_EMAIL and "
-            "ONEMAP_EMAIL_PASSWORD environment variables "
-            "(or create a .env file)."
+            "OneMap credentials not found.\n\n"
+            "Create ~/.onemap.env:\n\n"
+            "  cat > ~/.onemap.env << 'EOF'\n"
+            "  ONEMAP_EMAIL=your@email.com\n"
+            "  ONEMAP_EMAIL_PASSWORD=your_password\n"
+            "  EOF\n\n"
+            "Register: https://www.onemap.gov.sg/apidocs/register\n"
         )
     return email, password
 

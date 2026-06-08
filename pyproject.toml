@@ -38,6 +38,7 @@ dev = [
 
 [project.scripts]
 onemap = "onemap_sg.cli:main"
+onemap-sg-cli = "onemap_sg.cli:main"
 
 [project.urls]
 Homepage = "https://github.com/samuelncui/onemap-sg-cli"
