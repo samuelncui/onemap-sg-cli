@@ -2,6 +2,8 @@
 
 CLI for Singapore OneMap APIs. Run via `uvx onemap-sg-cli` (no install needed).
 
+Output: `-f text` (default, readable), `-f json` (simplified), `-f raw-json` (full).
+
 ## Setup (one-time)
 
 ```bash

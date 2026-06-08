@@ -27,6 +27,8 @@ Register: https://www.onemap.gov.sg/apidocs/register. URA data needs `URA_ACCESS
 
 All examples use `uvx onemap-sg-cli`. If pip-installed, replace with `onemap`.
 
+Output formats: `-f text` (default, human-readable), `-f json` (simplified JSON), `-f raw-json` (full API response).
+
 ### Search
 ```bash
 uvx onemap-sg-cli search "Orchard Road"

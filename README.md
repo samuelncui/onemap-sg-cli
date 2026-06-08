@@ -46,6 +46,10 @@ onemap search "Orchard Road"
 onemap route transit "Chinese Garden MRT" "One Raffles Quay"
 onemap route transit "Chinese Garden MRT" "One Raffles Quay" --time "09:00"
 
+# Output formats
+onemap -f json route transit "Chinese Garden MRT" "One Raffles Quay"
+onemap -f raw-json route transit "Chinese Garden MRT" "One Raffles Quay"
+
 # Coordinate conversion
 onemap convert wgs84-to-svy21 1.342 103.732
 
