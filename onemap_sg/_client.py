@@ -11,64 +11,57 @@ import time
 from typing import Any
 
 import httpx
-from dotenv import load_dotenv
 
-load_dotenv()
-
-# ---------------------------------------------------------------------------
-# Configuration
-# ---------------------------------------------------------------------------
-
-TOKEN_REFRESH_BUFFER_SECONDS = 60
-
-BASE_URL = os.getenv("ONEMAP_BASE_URL", "https://www.onemap.gov.sg")
-ELEVATION_API_URL = os.getenv(
-    "ELEVATION_API_URL", "https://api.open-elevation.com/api/v1/lookup"
+from onemap_sg._config import (
+    AUTH_ENDPOINT,
+    BASE_URL,
+    JSON_HEADERS,
+    REQUEST_TIMEOUT,
+    TOKEN_REFRESH_BUFFER_SECONDS,
 )
 
-REQUEST_TIMEOUT = 30.0
-JSON_HEADERS = {"Content-Type": "application/json"}
-
-# API Endpoints
-AUTH_ENDPOINT = "/api/auth/post/getToken"
-SEARCH_ENDPOINT = "/api/common/elastic/search"
-REVGEOCODE_WGS84_ENDPOINT = "/api/public/revgeocode"
-REVGEOCODE_SVY21_ENDPOINT = "/api/public/revgeocodexy"
-ROUTING_ENDPOINT = "/api/public/routingsvc/route"
-CONVERT_4326_TO_3857 = "/api/common/convert/4326to3857"
-CONVERT_4326_TO_3414 = "/api/common/convert/4326to3414"
-CONVERT_3414_TO_3857 = "/api/common/convert/3414to3857"
-CONVERT_3414_TO_4326 = "/api/common/convert/3414to4326"
-CONVERT_3857_TO_3414 = "/api/common/convert/3857to3414"
-CONVERT_3857_TO_4326 = "/api/common/convert/3857to4326"
-THEME_CHECK_STATUS = "/api/public/themesvc/checkThemeStatus"
-THEME_GET_INFO = "/api/public/themesvc/getThemeInfo"
-THEME_GET_ALL_INFO = "/api/public/themesvc/getAllThemesInfo"
-THEME_RETRIEVE = "/api/public/themesvc/retrieveTheme"
-PLANNING_AREA_ALL = "/api/public/popapi/getAllPlanningarea"
-PLANNING_AREA_NAMES = "/api/public/popapi/getPlanningareaNames"
-PLANNING_AREA_QUERY = "/api/public/popapi/getPlanningarea"
-POP_ECONOMIC_STATUS = "/api/public/popapi/getEconomicStatus"
-POP_EDUCATION = "/api/public/popapi/getEducationAttending"
-POP_ETHNIC_GROUP = "/api/public/popapi/getEthnicGroup"
-POP_HOUSEHOLD_INCOME = "/api/public/popapi/getHouseholdMonthlyIncomeWork"
-POP_HOUSEHOLD_SIZE = "/api/public/popapi/getHouseholdSize"
-POP_HOUSEHOLD_STRUCTURE = "/api/public/popapi/getHouseholdStructure"
-POP_INCOME_FROM_WORK = "/api/public/popapi/getIncomeFromWork"
-POP_INDUSTRY = "/api/public/popapi/getIndustry"
-POP_LANGUAGE_LITERATE = "/api/public/popapi/getLanguageLiterate"
-POP_MARITAL_STATUS = "/api/public/popapi/getMaritalStatus"
-POP_TRANSPORT_SCHOOL = "/api/public/popapi/getModeOfTransportSchool"
-POP_TRANSPORT_WORK = "/api/public/popapi/getModeOfTransportWork"
-POP_AGE_GROUP = "/api/public/popapi/getPopulationAgeGroup"
-POP_RELIGION = "/api/public/popapi/getReligion"
-POP_SPOKEN_LANGUAGE = "/api/public/popapi/getSpokenAtHome"
-POP_TENANCY = "/api/public/popapi/getTenancy"
-POP_DWELLING_HOUSEHOLD = "/api/public/popapi/getTypeOfDwellingHousehold"
-POP_DWELLING_POP = "/api/public/popapi/getTypeOfDwellingPop"
-NEARBY_MRT = "/api/public/nearbysvc/getNearestMrtStops"
-NEARBY_BUS = "/api/public/nearbysvc/getNearestBusStops"
-STATIC_MAP_ENDPOINT = "/api/staticmap/getStaticImage"
+# Re-export all config constants so other modules can import from _client
+from onemap_sg._config import (  # noqa: F401
+    CONVERT_3414_TO_3857,
+    CONVERT_3414_TO_4326,
+    CONVERT_3857_TO_3414,
+    CONVERT_3857_TO_4326,
+    CONVERT_4326_TO_3414,
+    CONVERT_4326_TO_3857,
+    ELEVATION_API_URL,
+    NEARBY_BUS,
+    NEARBY_MRT,
+    PLANNING_AREA_ALL,
+    PLANNING_AREA_NAMES,
+    PLANNING_AREA_QUERY,
+    POP_AGE_GROUP,
+    POP_DWELLING_HOUSEHOLD,
+    POP_DWELLING_POP,
+    POP_ECONOMIC_STATUS,
+    POP_EDUCATION,
+    POP_ETHNIC_GROUP,
+    POP_HOUSEHOLD_INCOME,
+    POP_HOUSEHOLD_SIZE,
+    POP_HOUSEHOLD_STRUCTURE,
+    POP_INCOME_FROM_WORK,
+    POP_INDUSTRY,
+    POP_LANGUAGE_LITERATE,
+    POP_MARITAL_STATUS,
+    POP_RELIGION,
+    POP_SPOKEN_LANGUAGE,
+    POP_TENANCY,
+    POP_TRANSPORT_SCHOOL,
+    POP_TRANSPORT_WORK,
+    REVGEOCODE_SVY21_ENDPOINT,
+    REVGEOCODE_WGS84_ENDPOINT,
+    ROUTING_ENDPOINT,
+    SEARCH_ENDPOINT,
+    STATIC_MAP_ENDPOINT,
+    THEME_CHECK_STATUS,
+    THEME_GET_ALL_INFO,
+    THEME_GET_INFO,
+    THEME_RETRIEVE,
+)
 
 
 # ---------------------------------------------------------------------------
@@ -79,7 +72,7 @@ _http_clients: dict[str, httpx.AsyncClient] = {}
 
 
 async def _get_async_client(
-    base_url: str, timeout: float = 30.0
+    base_url: str, timeout: float = REQUEST_TIMEOUT
 ) -> httpx.AsyncClient:
     if base_url not in _http_clients:
         _http_clients[base_url] = httpx.AsyncClient(

@@ -10,6 +10,7 @@ Usage::
 from __future__ import annotations
 
 import asyncio
+import inspect
 import json
 import sys
 from datetime import datetime
@@ -28,7 +29,7 @@ class AsyncCommand(click.Command):
 
     def invoke(self, ctx: click.Context) -> Any:
         callback = ctx.command.callback  # type: ignore[union-attr]
-        if asyncio.iscoroutinefunction(callback):
+        if inspect.iscoroutinefunction(callback):
             return asyncio.run(callback(**ctx.params))
         return super().invoke(ctx)
 
@@ -230,14 +231,13 @@ _CONVERT_COMMANDS = [
 
 
 def _make_convert_cmd(cmd_name: str, fn_name: str, a1: str, a2: str):
-    @click.argument(a1, type=float)
-    @click.argument(a2, type=float)
-    @click.pass_context
-    async def cmd(ctx: click.Context, **kwargs: Any):
+    @click.argument("b", type=float, metavar=a2.upper())
+    @click.argument("a", type=float, metavar=a1.upper())
+    async def cmd(a: float, b: float):
         from onemap_sg import coordinate
 
         fn = getattr(coordinate, fn_name)
-        result = await fn(kwargs[a1], kwargs[a2])
+        result = await fn(a, b)
         click.echo(json.dumps(result, indent=2, ensure_ascii=False))
 
     cmd.__name__ = cmd_name.replace("-", "_")
@@ -246,7 +246,8 @@ def _make_convert_cmd(cmd_name: str, fn_name: str, a1: str, a2: str):
 
 for _name, _fn, _a1, _a2 in _CONVERT_COMMANDS:
     c = _make_convert_cmd(_name, _fn, _a1, _a2)
-    convert.add_command(AsyncCommand(_name, callback=c))
+    params = getattr(c, "__click_params__", None)
+    convert.add_command(AsyncCommand(_name, callback=c, params=params))
 
 
 # ===========================================================================
@@ -387,8 +388,9 @@ def _make_pop_cmd(fn_name: str):
 for _cmd_name, _fn_name in _POP_COMMANDS.items():
     c = _make_pop_cmd(_fn_name)
     c.__name__ = _cmd_name.replace("-", "_")
+    params = getattr(c, "__click_params__", None)
     pop.add_command(AsyncCommand(
-        _cmd_name, callback=c,
+        _cmd_name, callback=c, params=params,
         help=f"{_cmd_name} distribution",
     ))
 
@@ -613,3 +615,7 @@ async def ura_carpark_details():
 
     result = await get_car_park_details()
     click.echo(json.dumps(result, indent=2, ensure_ascii=False))
+
+
+if __name__ == "__main__":
+    main()

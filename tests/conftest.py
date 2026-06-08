@@ -18,7 +18,7 @@ def has_credentials() -> bool:
 def onemap_cli(*args: str) -> subprocess.CompletedProcess:
     """Run `onemap` CLI and return CompletedProcess."""
     return subprocess.run(
-        [sys.executable, "-m", "onemap_sg.cli.main", *args],
+        [sys.executable, "-m", "onemap_sg.cli", *args],
         capture_output=True, text=True, timeout=30,
         cwd=str(PROJECT_ROOT),
         env={**os.environ, "PYTHONPATH": str(PROJECT_ROOT)},
