@@ -41,6 +41,7 @@ install_one() {
 
 # ── Install by agent ──
 install_hermes()   { install_one hermes   "$HOME/.hermes/skills/onemap-sg-cli/SKILL.md"    "$BASE_URL/SKILL.md"  false "test -d $HOME/.hermes"; }
+install_generic()  { install_one generic  "$HOME/.agents/skills/onemap-sg-cli/SKILL.md"     "$BASE_URL/SKILL.md"  false "test -d $HOME/.agents/skills"; }
 install_cursor()   { install_one cursor   "$PWD/.cursor/rules/onemap-sg-cli.mdc"            "$BASE_URL/AGENTS.md" false "test -d $PWD/.cursor -o -f $PWD/AGENTS.md"; }
 install_claude()   { install_one claude   "$PWD/CLAUDE.md"                                  "$BASE_URL/AGENTS.md" true  "test -f $PWD/CLAUDE.md -o command -v claude &>/dev/null"; }
 install_cline()    { install_one cline    "$PWD/.clinerules"                                "$BASE_URL/AGENTS.md" true  "test -f $PWD/.clinerules"; }
@@ -49,7 +50,7 @@ install_windsurf() { install_one windsurf "$PWD/.windsurfrules"                 
 install_aider()    { install_one aider    "$PWD/CONVENTIONS.md"                             "$BASE_URL/AGENTS.md" true  "test -f $PWD/.aider.conf.yml -o -f $PWD/CONVENTIONS.md"; }
 install_agents()   { install_one agents   "$PWD/AGENTS.md"                                  "$BASE_URL/AGENTS.md" false "true"; }
 
-ALL_AGENTS=(hermes cursor claude cline copilot windsurf aider agents)
+ALL_AGENTS=(hermes generic cursor claude cline copilot windsurf aider agents)
 
 # ── Resolve agent list ──
 AGENTS_TO_INSTALL=()
@@ -59,7 +60,14 @@ case "$AGENT" in
     AGENTS_TO_INSTALL=("${ALL_AGENTS[@]}")
     ;;
   auto)
+    # Prioritize ~/.agents/skills if it exists (generic skill directory)
+    if [ -d "$HOME/.agents/skills" ]; then
+      if install_generic 2>/dev/null; then
+        AGENTS_TO_INSTALL+=("generic")
+      fi
+    fi
     for a in "${ALL_AGENTS[@]}"; do
+      [ "$a" = "generic" ] && continue  # already handled above
       if "install_$a" 2>/dev/null; then
         AGENTS_TO_INSTALL+=("$a")
       fi
@@ -68,7 +76,8 @@ case "$AGENT" in
     echo "Done. ${#AGENTS_TO_INSTALL[@]} agent(s) updated. Restart to load."
     exit 0
     ;;
-  *)
+
+  *|generic)
     if ! declare -f "install_$AGENT" &>/dev/null; then
       echo "Unknown agent: $AGENT. Valid: ${ALL_AGENTS[*]}"
       exit 1
