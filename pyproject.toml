@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "onemap-sg-cli"
-version = "0.2.1"
+version = "0.3.0"
 description = "Singapore OneMap CLI — search, geocode, routing, themes, demographics. Output: text (default), JSON (-f json), or raw API (-f raw-json)."
 readme = "README.md"
 license = {text = "MIT"}

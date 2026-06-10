@@ -67,8 +67,6 @@ async def get_static_map(
     Raises:
         ValueError: If any parameter validation fails.
     """
-    from onemap_sg._client import _token_manager as tm
-
     valid_layers = ["night", "grey", "original", "default", "landlot"]
     if layer_chosen not in valid_layers:
         raise ValueError(
@@ -116,7 +114,7 @@ async def get_static_map(
     if fill_color is not None:
         params["fillColor"] = fill_color
 
-    access_token = await tm.get_access_token()
+    access_token = await _token_manager.get_access_token()
     client = await _get_async_client(BASE_URL, REQUEST_TIMEOUT)
 
     response = await client.get(
